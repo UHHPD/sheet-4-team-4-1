@@ -2,6 +2,7 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <fstream>
 
 #include "Data.hh"
 
@@ -51,16 +52,89 @@ bool testCopyConstructor() {
          testEqual("measurement", 10., c.measurement(0));
 }
 
+bool testCompatibility()
+{
+  std::cout << "testCompatibility...";
+  Data a("testA");
+  Data b("testB");
+
+  int difference = a.checkCompatibility(b, 1); 
+  
+  // std::cout << difference << endl;
+
+  return testEqual( "compatibilty", 1, difference );
+}
+
 void runTests() {
   std::cout << "running tests...\n";
   std::vector<std::function<bool()> > tests(
       {testReadingSize, testReadingMeasurement, testReadingBinEdges,
-       testReadingErrors, testCopyConstructor});
+       testReadingErrors, testCopyConstructor, testCompatibility});
   for (auto test : tests)
     std::cout << (test() ? " ok" : " FAILED!") << std::endl;
 }
 
-int main() {
+// Making combination for problem 2d): 
+Data combination(Data datX, Data datY, Data datZ, Data datA)
+{
+  ofstream fout("combination.txt");
+
+  fout << datX.size() << endl;
+  // Write bins in new file "average.txt": 
+  for(int i = 0; i <= datX.size(); i += 1)
+  {
+    fout << datX.binLow(i) << " " ; 
+  }
+  fout << endl; 
+
+  if(datX.checkCompatibility(datY, 3) == 0)
+  {
+    double y1 = 0;
+    double y2 = 0;
+    double y3 = 0;
+    double y4 = 0;
+    double w1 = 0;
+    double w2 = 0;
+    double w3 = 0;
+    double w4 = 0;
+
+    for( int i = 0; i < datX.size(); i++)
+    {
+      y1 = datX.measurement(i);
+      y2 = datY.measurement(i);
+      y3 = datZ.measurement(i);
+      y4 = datA.measurement(i);
+      w1 = pow( datX.error(i), -2);
+      w2 = pow( datY.error(i), -2);
+      w3 = pow( datZ.error(i), -2);
+      w4 = pow( datA.error(i), -2);
+      
+      fout << (y1*w1+y2*w2+y3*w3+y4*w4)/(w1+w2+w3+w4) << " ";
+    }
+    fout << endl; 
+    for( int i = 0; i < datX.size(); i++)
+    {
+      w1 = pow( datX.error(i), -2);
+      w2 = pow( datY.error(i), -2);
+      w3 = pow( datZ.error(i), -2);
+      w4 = pow( datA.error(i), -2);
+      fout << sqrt(1/(w1+w2+w3+w4)) << " ";
+    }
+    fout.close(); 
+  }
+  else
+  {
+    std::cout << "NON-COMPATIBLE!!!"; 
+  }
+
+  // Create instance of class Data: 
+  Data combination("combination.txt");
+  return combination; 
+}
+
+
+int main() 
+{
   using namespace std;
 
   cout << "******************************************************" << endl;
@@ -68,12 +142,93 @@ int main() {
   cout << "******************************************************" << endl;
   // create an object which holds data of experiment A
   Data datA("exp_A");
+  Data datB("exp_B");
+  Data datC("exp_C");
+  Data datD("exp_D");
 
+  // vector<Data> meas(4) only works if keyword "private" is commented out
+  // in header. "meas" = measurements 
+  vector<Data> meas;
+  vector<string> exp{"A","B", "C", "D"};
+  meas.push_back(datA); 
+  meas.push_back(datB); 
+  meas.push_back(datC);
+  meas.push_back(datD);  
+  
+  //read bin 27 from all four data sets
+  for(int i; i < 4; i++)
+  {
+    cout << "measured cross section of experiment " << exp[i] << " in bin 27: " << meas.at(i).measurement(27) << endl;
+  }
+  
+  //calculating delta_y and sigma_delta_y for bin 27 and data set A and B
+  double delta_y;
+  double sigma_delta_y;
+  double n;
+  delta_y = abs(meas.at(1).measurement(27) -  meas.at(0).measurement(27));
+  sigma_delta_y = sqrt(pow(meas.at(1).error(27),2)+pow(meas.at(0).error(27),2)); //error propagation
+  n = delta_y/sigma_delta_y;
+  cout << "delta_y AB: " << delta_y << endl;
+  cout << "sigma_delta_y AB: " << sigma_delta_y << endl;
+  cout << "n = delta_y/sigma_delta_y: " << n << endl; 
+  
   // here is the data from experiment A
   cout << "bin 27: from " << datA.binLow(27) << " to " << datA.binHigh(27)
        << endl;
   cout << "measurement of experiment A in bin 27: " << datA.measurement(27)
        << endl;
+
+  // Average two datasets (which is only done if they are compatible within 3 standard-deviations): 
+  Data avgAB = datA + datB;
+  Data avgAC = datA + datC;
+  Data avgAD = datA + datD;
+  Data avgBC = datB + datC;
+  Data avgBD = datB + datD;
+  Data avgCD = datC + datD;
+
+  // Check which experiments are compatible with each other within 2 standard-dev.: 
+  cout << "Number of differences between expA and expB with 2 standard-dev. " << meas[0].checkCompatibility(meas[1], 2) << endl ; 
+  cout << "Number of differences between expA and expC with 2 standard-dev. " << meas[0].checkCompatibility(meas[2], 2) << endl; 
+  cout << "Number of differences between expA and expD with 2 standard-dev. " << meas[0].checkCompatibility(meas[3], 2) << endl; 
+  cout << "Number of differences between expB and expC with 2 standard-dev. "  << meas[1].checkCompatibility(meas[2], 2) << endl; 
+  cout << "Number of differences between expB and expD with 2 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 2) << endl; 
+  cout << "Number of differences between expC and expD with 2 standard-dev. "  << meas[2].checkCompatibility(meas[3], 2) << endl;
+
+  meas[0].returnOutliers(meas[1], 2);
+  meas[0].returnOutliers(meas[2], 2);
+  meas[0].returnOutliers(meas[3], 2);
+  meas[1].returnOutliers(meas[2], 2);
+  meas[1].returnOutliers(meas[3], 2);
+  meas[2].returnOutliers(meas[3], 2); 
+
+  cout << endl;
+  
+  // Check which experiments are compatible with each other within 3 standard-dev.: 
+  cout << "Number of differences between expA and expB with 3 standard-dev. " << meas[0].checkCompatibility(meas[1], 3) << endl ; 
+  cout << "Number of differences between expA and expC with 3 standard-dev. " << meas[0].checkCompatibility(meas[2], 3) << endl; 
+  cout << "Number of differences between expA and expD with 3 standard-dev. " << meas[0].checkCompatibility(meas[3], 3) << endl; 
+  cout << "Number of differences between expB and expC with 3 standard-dev. "  << meas[1].checkCompatibility(meas[2], 3) << endl; 
+  cout << "Number of differences between expB and expD with 3 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 3) << endl; 
+  cout << "Number of differences between expC and expD with 3 standard-dev. "  << meas[2].checkCompatibility(meas[3], 3) << endl; 
+
+  meas[0].returnOutliers(meas[1], 3);
+  meas[0].returnOutliers(meas[2], 3);
+  meas[0].returnOutliers(meas[3], 3);
+  meas[1].returnOutliers(meas[2], 3);
+  meas[1].returnOutliers(meas[3], 3);
+  meas[2].returnOutliers(meas[3], 3);   
+
+  // FOR EXERCISE 2: 
+  cout << endl; 
+  cout << "Chi Square/ndf A " << meas[0].chi_square_test() << endl; 
+  cout << "Chi Square/ndf B " <<  meas[1].chi_square_test() << endl; 
+  cout << "Chi Square/ndf C " << meas[2].chi_square_test() << endl; 
+  cout << "Chi Square/ndf D " << meas[3].chi_square_test() << endl; 
+
+  
+  Data combined = ((meas[0] + meas[1]) + meas[2]) + meas[3];
+  std::cout << "The combined Chi-square/ndf is: " << 
+  combination(meas[0], meas[1], meas[2], meas[3]).chi_square_test() << std::endl;
 
   return 0;
 }
