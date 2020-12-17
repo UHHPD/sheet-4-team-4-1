@@ -74,6 +74,7 @@ void runTests() {
     std::cout << (test() ? " ok" : " FAILED!") << std::endl;
 }
 
+// Making average without overload: 
 Data average(Data datX, Data datY, string X, string Y)
 {
   ofstream fout("average" + X +Y +".txt");
@@ -166,10 +167,37 @@ int main()
   cout << "measurement of experiment A in bin 27: " << datA.measurement(27)
        << endl;
 
-  cout << sqrt(16) << endl; 
-  cout << sqrt(25) << endl; 
-  cout << sqrt(36) << endl; 
-  cout << sqrt(49) << endl; 
+  // Average two datasets (which is only done if they are compatible within 3 standard-deviations): 
+  Data avgAB = datA + datB;
+  Data avgAC = datA + datC;
+  Data avgAD = datA + datD;
+  Data avgBC = datB + datC;
+  Data avgBD = datB + datD;
+  Data avgCD = datC + datD;
+
+  // FOR EXERCISE 2: 
+  cout << meas[0].chi_square_test() << endl; 
+  cout << meas[1].chi_square_test() << endl; 
+  cout << meas[2].chi_square_test() << endl; 
+  cout << meas[3].chi_square_test() << endl; 
+
+  // Check which experiments are compatible with each other within 3 standard-dev.: 
+  cout << "Number of differences between expA and expB with 3 standard-dev. " << meas[0].checkCompatibility(meas[1], 3) << endl ; 
+  cout << "Number of differences between expA and expC with 3 standard-dev. " << meas[0].checkCompatibility(meas[2], 3) << endl; 
+  cout << "Number of differences between expA and expD with 3 standard-dev. " << meas[0].checkCompatibility(meas[3], 3) << endl; 
+  cout << "Number of differences between expB and expC with 3 standard-dev. "  << meas[1].checkCompatibility(meas[2], 3) << endl; 
+  cout << "Number of differences between expB and expD with 3 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 3) << endl; 
+  cout << "Number of differences between expC and expD with 3 standard-dev. "  << meas[2].checkCompatibility(meas[3], 3) << endl; 
+
+  cout << endl;
+
+  // Check which experiments are compatible with each other within 2 standard-dev.: 
+  cout << "Number of differences between expA and expB with 2 standard-dev. " << meas[0].checkCompatibility(meas[1], 2) << endl ; 
+  cout << "Number of differences between expA and expC with 2 standard-dev. " << meas[0].checkCompatibility(meas[2], 2) << endl; 
+  cout << "Number of differences between expA and expD with 2 standard-dev. " << meas[0].checkCompatibility(meas[3], 2) << endl; 
+  cout << "Number of differences between expB and expC with 2 standard-dev. "  << meas[1].checkCompatibility(meas[2], 2) << endl; 
+  cout << "Number of differences between expB and expD with 2 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 2) << endl; 
+  cout << "Number of differences between expC and expD with 2 standard-dev. "  << meas[2].checkCompatibility(meas[3], 2) << endl;
 
   return 0;
 }
