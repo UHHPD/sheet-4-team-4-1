@@ -74,10 +74,10 @@ void runTests() {
     std::cout << (test() ? " ok" : " FAILED!") << std::endl;
 }
 
-// Making average without overload: 
-Data average(Data datX, Data datY, string X, string Y)
+// Making combination for problem 2d): 
+Data combination(Data datX, Data datY, Data datZ, Data datA)
 {
-  ofstream fout("average" + X +Y +".txt");
+  ofstream fout("combination.txt");
 
   fout << datX.size() << endl;
   // Write bins in new file "average.txt": 
@@ -91,23 +91,34 @@ Data average(Data datX, Data datY, string X, string Y)
   {
     double y1 = 0;
     double y2 = 0;
+    double y3 = 0;
+    double y4 = 0;
     double w1 = 0;
     double w2 = 0;
+    double w3 = 0;
+    double w4 = 0;
 
     for( int i = 0; i < datX.size(); i++)
     {
       y1 = datX.measurement(i);
       y2 = datY.measurement(i);
+      y3 = datZ.measurement(i);
+      y4 = datA.measurement(i);
       w1 = pow( datX.error(i), -2);
       w2 = pow( datY.error(i), -2);
-      fout << (y1*w1+y2*w2)/(w1+w2) << " ";
+      w3 = pow( datZ.error(i), -2);
+      w4 = pow( datA.error(i), -2);
+      
+      fout << (y1*w1+y2*w2+y3*w3+y4*w4)/(w1+w2+w3+w4) << " ";
     }
     fout << endl; 
     for( int i = 0; i < datX.size(); i++)
     {
       w1 = pow( datX.error(i), -2);
       w2 = pow( datY.error(i), -2);
-      fout << sqrt(1/(w1+w2)) << " ";
+      w3 = pow( datZ.error(i), -2);
+      w4 = pow( datA.error(i), -2);
+      fout << sqrt(1/(w1+w2+w3+w4)) << " ";
     }
     fout.close(); 
   }
@@ -117,8 +128,8 @@ Data average(Data datX, Data datY, string X, string Y)
   }
 
   // Create instance of class Data: 
-  Data average("average" + X +Y + ".txt");
-  return average; 
+  Data combination("combination.txt");
+  return combination; 
 }
 
 
@@ -215,8 +226,9 @@ int main()
   cout << "Chi Square/ndf D " << meas[3].chi_square_test() << endl; 
 
   
-  Data combined = meas[0] + meas[1] + meas[2] + meas[3];
-  std::cout << "The combined Chi-square/ndf is: " << combined.chi_square_test() << std::endl;
+  Data combined = ((meas[0] + meas[1]) + meas[2]) + meas[3];
+  std::cout << "The combined Chi-square/ndf is: " << 
+  combination(meas[0], meas[1], meas[2], meas[3]).chi_square_test() << std::endl;
 
   return 0;
 }
