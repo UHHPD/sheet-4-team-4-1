@@ -4,11 +4,13 @@
 #include <vector>
 #include <string>
 #include<cmath>
+#include<iostream>
 
 using namespace std;
 
 class Data {
  public:
+  std::string m_dataID;
   Data(const std::string& filename);
   Data(Data&, Data&);
   unsigned int size() const { return m_data.size(); }
@@ -23,11 +25,42 @@ class Data {
   std::vector<double> giveErrors(){return m_errors;}
   Data operator+ (Data&);
   
+  
+  vector<double> returnOutliers(const Data& in, int n) 
+  {
+    double delta_y = 0;
+    double sigma_delta_y =0;
+    vector <double> differences ; 
+    vector <double> indices;
+    
+    // m_data.size(): size of data points (ifstream in data.cc)
+    // m_data is the object on which we call the entire function checkCompatibility
+    for(int i = 0; i < m_data.size(); i += 1)
+    {
+      delta_y = abs(m_data[i] - in.measurement(i) );   
+      // error propagation
+      sigma_delta_y = sqrt( pow(m_errors[i], 2) +  pow(in.error(i), 2) ); 
+      if( delta_y / sigma_delta_y > n  )
+      {
+        differences.push_back(m_data[i]); 
+        indices.push_back(binCenter(i));
+      }
+    }
+    std::cout << std::endl << "Experiments "<< m_dataID << " and " << in.m_dataID << " show " << differences.size() << " Outlier(s) at " << n << " standard deviations: " ;
+    for(int i = 0; i < indices.size(); i++)
+    {
+        std::cout << "(" << indices[i] << ", " << differences[i]<< ")" << std::endl;
+    }
+    return differences, indices; 
+  }
+  
+  
   int checkCompatibility(const Data& in, int n) 
   {
     double delta_y = 0;
     double sigma_delta_y =0;
     int differences = 0; 
+    
 
     // m_data.size(): size of data points (ifstream in data.cc)
     // m_data is the object on which we call the entire function checkCompatibility
@@ -43,6 +76,7 @@ class Data {
     }
     return differences; 
   }
+  
   // function to calculate chi^2/ndf
   double chi_square_test( )
   {
@@ -51,8 +85,8 @@ class Data {
 
     for(int i = 0; i < m_data.size(); i++ )
     {
-      // chi_square += pow(in.measurement(i), 2) ;
-      chi_square += 1; 
+      // chi_square += pow( (m_data[i] - this->f(this->binCenter( i ))) / m_errors[i], 2 )/ndf; 
+      chi_square += pow( (m_data[i] - f(binCenter( i ))) / m_errors[i], 2 )/ndf; 
     }
 
     return chi_square; 

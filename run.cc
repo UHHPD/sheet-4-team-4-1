@@ -175,12 +175,23 @@ int main()
   Data avgBD = datB + datD;
   Data avgCD = datC + datD;
 
-  // FOR EXERCISE 2: 
-  cout << meas[0].chi_square_test() << endl; 
-  cout << meas[1].chi_square_test() << endl; 
-  cout << meas[2].chi_square_test() << endl; 
-  cout << meas[3].chi_square_test() << endl; 
+  // Check which experiments are compatible with each other within 2 standard-dev.: 
+  cout << "Number of differences between expA and expB with 2 standard-dev. " << meas[0].checkCompatibility(meas[1], 2) << endl ; 
+  cout << "Number of differences between expA and expC with 2 standard-dev. " << meas[0].checkCompatibility(meas[2], 2) << endl; 
+  cout << "Number of differences between expA and expD with 2 standard-dev. " << meas[0].checkCompatibility(meas[3], 2) << endl; 
+  cout << "Number of differences between expB and expC with 2 standard-dev. "  << meas[1].checkCompatibility(meas[2], 2) << endl; 
+  cout << "Number of differences between expB and expD with 2 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 2) << endl; 
+  cout << "Number of differences between expC and expD with 2 standard-dev. "  << meas[2].checkCompatibility(meas[3], 2) << endl;
 
+  meas[0].returnOutliers(meas[1], 2);
+  meas[0].returnOutliers(meas[2], 2);
+  meas[0].returnOutliers(meas[3], 2);
+  meas[1].returnOutliers(meas[2], 2);
+  meas[1].returnOutliers(meas[3], 2);
+  meas[2].returnOutliers(meas[3], 2); 
+
+  cout << endl;
+  
   // Check which experiments are compatible with each other within 3 standard-dev.: 
   cout << "Number of differences between expA and expB with 3 standard-dev. " << meas[0].checkCompatibility(meas[1], 3) << endl ; 
   cout << "Number of differences between expA and expC with 3 standard-dev. " << meas[0].checkCompatibility(meas[2], 3) << endl; 
@@ -189,15 +200,23 @@ int main()
   cout << "Number of differences between expB and expD with 3 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 3) << endl; 
   cout << "Number of differences between expC and expD with 3 standard-dev. "  << meas[2].checkCompatibility(meas[3], 3) << endl; 
 
-  cout << endl;
+  meas[0].returnOutliers(meas[1], 3);
+  meas[0].returnOutliers(meas[2], 3);
+  meas[0].returnOutliers(meas[3], 3);
+  meas[1].returnOutliers(meas[2], 3);
+  meas[1].returnOutliers(meas[3], 3);
+  meas[2].returnOutliers(meas[3], 3);   
 
-  // Check which experiments are compatible with each other within 2 standard-dev.: 
-  cout << "Number of differences between expA and expB with 2 standard-dev. " << meas[0].checkCompatibility(meas[1], 2) << endl ; 
-  cout << "Number of differences between expA and expC with 2 standard-dev. " << meas[0].checkCompatibility(meas[2], 2) << endl; 
-  cout << "Number of differences between expA and expD with 2 standard-dev. " << meas[0].checkCompatibility(meas[3], 2) << endl; 
-  cout << "Number of differences between expB and expC with 2 standard-dev. "  << meas[1].checkCompatibility(meas[2], 2) << endl; 
-  cout << "Number of differences between expB and expD with 2 standard-dev. "  <<meas[1].checkCompatibility(meas[3], 2) << endl; 
-  cout << "Number of differences between expC and expD with 2 standard-dev. "  << meas[2].checkCompatibility(meas[3], 2) << endl;
+  // FOR EXERCISE 2: 
+  cout << endl; 
+  cout << "Chi Square/ndf A " << meas[0].chi_square_test() << endl; 
+  cout << "Chi Square/ndf B " <<  meas[1].chi_square_test() << endl; 
+  cout << "Chi Square/ndf C " << meas[2].chi_square_test() << endl; 
+  cout << "Chi Square/ndf D " << meas[3].chi_square_test() << endl; 
+
+  
+  Data combined = meas[0] + meas[1] + meas[2] + meas[3];
+  std::cout << "The combined Chi-square/ndf is: " << combined.chi_square_test() << std::endl;
 
   return 0;
 }
