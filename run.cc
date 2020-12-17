@@ -2,6 +2,7 @@
 #include <vector>
 #include <functional>
 #include <string>
+#include <fstream>
 
 #include "Data.hh"
 
@@ -118,6 +119,7 @@ Data average(Data datX, Data datY, string X, string Y)
   Data average("average" + X +Y + ".txt");
   return average; 
 }
+
 
 int main() 
 {
