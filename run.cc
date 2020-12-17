@@ -73,7 +73,54 @@ void runTests() {
     std::cout << (test() ? " ok" : " FAILED!") << std::endl;
 }
 
-int main() {
+Data average(Data datX, Data datY, string X, string Y)
+{
+  ofstream fout("average" + X +Y +".txt");
+
+  fout << datX.size() << endl;
+  // Write bins in new file "average.txt": 
+  for(int i = 0; i <= datX.size(); i += 1)
+  {
+    fout << datX.binLow(i) << " " ; 
+  }
+  fout << endl; 
+
+  if(datX.checkCompatibility(datY, 3) == 0)
+  {
+    double y1 = 0;
+    double y2 = 0;
+    double w1 = 0;
+    double w2 = 0;
+
+    for( int i = 0; i < datX.size(); i++)
+    {
+      y1 = datX.measurement(i);
+      y2 = datY.measurement(i);
+      w1 = pow( datX.error(i), -2);
+      w2 = pow( datY.error(i), -2);
+      fout << (y1*w1+y2*w2)/(w1+w2) << " ";
+    }
+    fout << endl; 
+    for( int i = 0; i < datX.size(); i++)
+    {
+      w1 = pow( datX.error(i), -2);
+      w2 = pow( datY.error(i), -2);
+      fout << sqrt(1/(w1+w2)) << " ";
+    }
+    fout.close(); 
+  }
+  else
+  {
+    std::cout << "NON-COMPATIBLE!!!"; 
+  }
+
+  // Create instance of class Data: 
+  Data average("average" + X +Y + ".txt");
+  return average; 
+}
+
+int main() 
+{
   using namespace std;
 
   cout << "******************************************************" << endl;
@@ -81,12 +128,46 @@ int main() {
   cout << "******************************************************" << endl;
   // create an object which holds data of experiment A
   Data datA("exp_A");
+  Data datB("exp_B");
+  Data datC("exp_C");
+  Data datD("exp_D");
 
+  // vector<Data> meas(4) only works if keyword "private" is commented out
+  // in header. "meas" = measurements 
+  vector<Data> meas;
+  vector<string> exp{"A","B", "C", "D"};
+  meas.push_back(datA); 
+  meas.push_back(datB); 
+  meas.push_back(datC);
+  meas.push_back(datD);  
+  
+  //read bin 27 from all four data sets
+  for(int i; i < 4; i++)
+  {
+    cout << "measured cross section of experiment " << exp[i] << " in bin 27: " << meas.at(i).measurement(27) << endl;
+  }
+  
+  //calculating delta_y and sigma_delta_y for bin 27 and data set A and B
+  double delta_y;
+  double sigma_delta_y;
+  double n;
+  delta_y = abs(meas.at(1).measurement(27) -  meas.at(0).measurement(27));
+  sigma_delta_y = sqrt(pow(meas.at(1).error(27),2)+pow(meas.at(0).error(27),2)); //error propagation
+  n = delta_y/sigma_delta_y;
+  cout << "delta_y AB: " << delta_y << endl;
+  cout << "sigma_delta_y AB: " << sigma_delta_y << endl;
+  cout << "n = delta_y/sigma_delta_y: " << n << endl; 
+  
   // here is the data from experiment A
   cout << "bin 27: from " << datA.binLow(27) << " to " << datA.binHigh(27)
        << endl;
   cout << "measurement of experiment A in bin 27: " << datA.measurement(27)
        << endl;
+
+  cout << sqrt(16) << endl; 
+  cout << sqrt(25) << endl; 
+  cout << sqrt(36) << endl; 
+  cout << sqrt(49) << endl; 
 
   return 0;
 }
