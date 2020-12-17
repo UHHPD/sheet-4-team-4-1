@@ -51,11 +51,24 @@ bool testCopyConstructor() {
          testEqual("measurement", 10., c.measurement(0));
 }
 
+bool testCompatibility()
+{
+  std::cout << "testCompatibility...";
+  Data a("testA");
+  Data b("testB");
+
+  int difference = a.checkCompatibility(b, 1); 
+  
+  // std::cout << difference << endl;
+
+  return testEqual( "compatibilty", 1, difference );
+}
+
 void runTests() {
   std::cout << "running tests...\n";
   std::vector<std::function<bool()> > tests(
       {testReadingSize, testReadingMeasurement, testReadingBinEdges,
-       testReadingErrors, testCopyConstructor});
+       testReadingErrors, testCopyConstructor, testCompatibility});
   for (auto test : tests)
     std::cout << (test() ? " ok" : " FAILED!") << std::endl;
 }
